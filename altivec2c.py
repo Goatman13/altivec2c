@@ -397,6 +397,11 @@ def vmrglw(vA, vB, vD):
 
 # vmsummbm todo...
 
+def vmulfp(vA, vB, vD):
+
+	return "[4xfloat] v{:d} = v{:d} * v{:d}".format(vD, vA, vB)
+
+
 def vmulesb(vA, vB, vD):
 
 	cmt    = ".\nsigned\n"
@@ -834,6 +839,7 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vmrglb":        return vmrglb(vA, vB, vD)
 	elif opcode_name == "vmrglh":        return vmrglh(vA, vB, vD)
 	elif opcode_name == "vmrglw":        return vmrglw(vA, vB, vD)
+	elif opcode_name == "vmulfp":        return vmulfp(vA, vB, vD)
 	elif opcode_name == "vmulesb":       return vmulesb(vA, vB, vD)
 	elif opcode_name == "vmulesh":       return vmulesh(vA, vB, vD)
 	elif opcode_name == "vmuleub":       return vmuleub(vA, vB, vD)
@@ -858,7 +864,27 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vrlh":          return vrlh(vD, vA, vB)
 	elif opcode_name == "vrlw":          return vrlw(vD, vA, vB)
 	elif opcode_name == "vrsqrtefp":     return vrsqrtefp(vD, vB)
-	
+	elif opcode_name == "vsel":          return vsel(vA, vB, vC, vD)
+	elif opcode_name == "vsl":           return vsl(vD, vA, vB)
+	elif opcode_name == "vslb":          return vslb(vD, vA, vB)
+	elif opcode_name == "vsldoi":        return vsldoi(vD, vA, vB, sh)
+	elif opcode_name == "vslh":          return vslh(vD, vA, vB)
+	elif opcode_name == "vslo":          return vslo(vD, vA, vB)
+	elif opcode_name == "vslw":          return vslw(vD, vA, vB)
+	elif opcode_name == "vspltb":        return vspltb(vD, imm, vB)
+	elif opcode_name == "vsplth":        return vsplth(vD, imm, vB)
+	elif opcode_name == "vspltisb":      return vspltisb(vD, simm)
+	elif opcode_name == "vspltish":      return vspltish(vD, simm)
+	elif opcode_name == "vspltisw":      return vspltisw(vD, simm)
+	elif opcode_name == "vsplth":        return vsplth(vD, imm, vB)
+	elif opcode_name == "vsr":           return vsr(vD, vA, vB)
+	elif opcode_name == "vsrab":         return vsrab(vD, vA, vB)
+	elif opcode_name == "vsrah":         return vsrah(vD, vA, vB)
+	elif opcode_name == "vsraw":         return vsraw(vD, vA, vB)
+	elif opcode_name == "vsrb":          return vsrb(vD, vA, vB)
+	elif opcode_name == "vsrh":          return vsrh(vD, vA, vB)
+	elif opcode_name == "vsro":          return vsro(vD, vA, vB)
+	elif opcode_name == "vsrw":          return vsrw(vD, vA, vB)	
 	#VMX128
 	elif opcode_name == "vaddfp128":     return vaddfp(vmxA, vmxB, vmxD)
 	elif opcode_name == "vand128":       return vand(vmxA, vmxB, vmxD)
@@ -883,6 +909,7 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vminfp128":     return vminfp(vmxA, vmxB, vmxD)
 	elif opcode_name == "vmrghw128":     return vmrghw(vmxA, vmxB, vmxD)
 	elif opcode_name == "vmrglw128":     return vmrglw(vmxA, vmxB, vmxD)
+	elif opcode_name == "vmulfp128":     return vmulfp(vA, vB, vD)
 	elif opcode_name == "vnmsubfp128":   return vnmsubfp128(vmxA, vmxB, vmxD)
 	elif opcode_name == "vnor128":       return vnor(vmxA, vmxB, vmxD)
 	elif opcode_name == "vnot128":       return vnot(vmxA, vmxD)
@@ -898,6 +925,7 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vrlw128":       return vrlw(vmxD, vmxA, vmxB)
 	elif opcode_name == "vrlimi128":     return vrlimi128(vmxD, vmxB, vmxImm ,vmxRot)
 	elif opcode_name == "vrsqrtefp128":  return vrsqrtefp(vmxD, vmxB)
+	elif opcode_name == "vsldoi128":     return vsldoi(vmxD, vmxA, vmxB, vmxShb)
 
 	return 0
 
