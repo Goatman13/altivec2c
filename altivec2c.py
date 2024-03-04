@@ -214,12 +214,12 @@ def vcmpgtuw(vD, vA, vB, vRc):
 def vctsxs(vD, imm, vB):
 
 	imm    = exp2(imm)
-	return "v{:d}[4x32b] = (s32)(float)v{:d} * ".format(vD, vB) + imm
+	return "v{:d}[4x32b] = (s32)((float)v{:d} * ".format(vD, vB) + imm + ")"
 
 def vctuxs(vD, imm, vB):
 
 	imm    = exp2(imm)
-	return "v{:d}[4x32b] = (u32)(float)v{:d} * ".format(vD, vB) + imm
+	return "v{:d}[4x32b] = (u32)((float)v{:d} * ".format(vD, vB) + imm + ")"
 
 def vlogefp(vD, vB):
 
