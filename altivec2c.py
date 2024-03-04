@@ -1,6 +1,5 @@
 # altivec To C
 
-FLT_CONVERSION_SUPPORT = 1
 from ida_bytes import *
 from idaapi import *
 from idc import *
@@ -8,11 +7,13 @@ import idaapi
 import ida_bytes
 import idc
 
-try:
-	import numpy
-except ImportError:
-	FLT_CONVERSION_SUPPORT = 0
-	warning("WARNING:\naltivec2c: numpy not found!\nFloat conversion opcodes unsupported!")
+def exp2(j):
+	i = 0
+	r = 1
+	while i < j:
+		r *= 2
+		i += 1
+	return "{:.1f}".format(r)
 
 def sign_extend_imm5(_8_16, value):
 
@@ -109,13 +110,13 @@ def vavguw(vD, vA, vB):
 #todo verify cvts
 def vcfsx(vD, imm, vB):
 
-	imm    = numpy.exp2(imm)
-	return "v{:d}[4xfloat] = (float)(s32)v{:d}  / {:.1f}".format(vD, vB, imm)
+	imm    = exp2(imm)
+	return "v{:d}[4xfloat] = (float)(s32)v{:d} / ".format(vD, vB) + imm
 
 def vcfux(vD, imm, vB):
 
-	imm    = numpy.exp2(imm)
-	return "v{:d}[4xfloat] = (float)(u32)v{:d}  / {:.1f}".format(vD, vB, imm)
+	imm    = exp2(imm)
+	return "v{:d}[4xfloat] = (float)(u32)v{:d} / ".format(vD, vB) + imm
 
 # flt
 # todo
@@ -212,13 +213,13 @@ def vcmpgtuw(vD, vA, vB, vRc):
 #todo verify cvts
 def vctsxs(vD, imm, vB):
 
-	imm    = numpy.exp2(imm)
-	return "v{:d}[4x32b] = (s32)((float)v{:d}  * {:.1f})".format(vD, vB, imm)
+	imm    = exp2(imm)
+	return "v{:d}[4x32b] = (s32)(float)v{:d} * ".format(vD, vB) + imm
 
 def vctuxs(vD, imm, vB):
 
-	imm    = numpy.exp2(imm)
-	return "v{:d}[4x32b] = (u32)((float)v{:d}  * {:.1f})".format(vD, vB, imm)
+	imm    = exp2(imm)
+	return "v{:d}[4x32b] = (u32)(float)v{:d} * ".format(vD, vB) + imm
 
 def vlogefp(vD, vB):
 
@@ -773,6 +774,8 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vavgub":        return vavgub(vD, vA, vB)
 	elif opcode_name == "vavguh":        return vavguh(vD, vA, vB)
 	elif opcode_name == "vavguw":        return vavguw(vD, vA, vB)
+	elif opcode_name == "vcfsx":         return vcfsx(vD, imm, vB)
+	elif opcode_name == "vcfux":         return vcfux(vD, imm, vB)
 	elif opcode_name == "vcmpbfp":       return vcmpbfp(vD, vA, vB, vRc)
 	elif opcode_name == "vcmpeqfp":      return vcmpeqfp(vD, vA, vB, vRc)
 	elif opcode_name == "vcmpequb":      return vcmpequb(vD, vA, vB, vRc)
@@ -799,6 +802,8 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vcmpgtub.":     return vcmpgtub(vD, vA, vB, vRc)
 	elif opcode_name == "vcmpgtuh.":     return vcmpgtuh(vD, vA, vB, vRc)
 	elif opcode_name == "vcmpgtuw.":     return vcmpgtuw(vD, vA, vB, vRc)
+	elif opcode_name == "vctsxs":        return vctsxs(vD, imm, vB)
+	elif opcode_name == "vctuxs":        return vctuxs(vD, imm, vB)
 	elif opcode_name == "vlogefp":       return vlogefp(vD, vB)
 	elif opcode_name == "vexptefp":      return vexptefp(vD, vB)
 	elif opcode_name == "vmaddfp":       return vmaddfp(vD, vA, vB, vC)
@@ -883,6 +888,8 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vcmpgefp128.":  return vcmpgefp(vmxD, vmxA, vmxB, vmxRc)
 	elif opcode_name == "vcmpgtfp128":   return vcmpgtfp(vmxD, vmxA, vmxB, vmxRc)
 	elif opcode_name == "vcmpgtfp128.":  return vcmpgtfp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcsxwfp128":    return vcfsx(vmxD, vmxImm, vmxB) # correct?
+	elif opcode_name == "vcuxwfp128":    return vcfux(vmxD, vmxImm, vmxB) # correct?
 	elif opcode_name == "vlogefp128":    return vlogefp(vmxD, vmxB)
 	elif opcode_name == "vexptefp128":   return vexptefp(vmxD, vmxB)
 	elif opcode_name == "vmaddcfp128":   return vmaddfp128(vmxD, vmxA, vmxB)
@@ -911,15 +918,6 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vslw128":       return vslw(vmxD, vmxA, vmxB)
 	elif opcode_name == "vspltisw128":   return vspltisw(vmxD, vmxSimm)
 	elif opcode_name == "vspltw128":     return vspltw(vmxD, vmxImm, vmxB)
-
-	# Use numpy
-	elif opcode_name == "vcfsx" and FLT_CONVERSION_SUPPORT:      return vcfsx(vD, imm, vB)
-	elif opcode_name == "vcfux" and FLT_CONVERSION_SUPPORT:      return vcfux(vD, imm, vB)
-	elif opcode_name == "vctsxs" and FLT_CONVERSION_SUPPORT:     return vctsxs(vD, imm, vB)
-	elif opcode_name == "vctuxs" and FLT_CONVERSION_SUPPORT:     return vctuxs(vD, imm, vB)
-	#VMX128
-	elif opcode_name == "vcsxwfp128" and FLT_CONVERSION_SUPPORT: return vcfsx(vmxD, vmxImm, vmxB) # correct?
-	elif opcode_name == "vcuxwfp128" and FLT_CONVERSION_SUPPORT: return vcfux(vmxD, vmxImm, vmxB) # correct?
 
 	return 0
 
