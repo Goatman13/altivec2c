@@ -14,13 +14,6 @@ except ImportError:
 	FLT_CONVERSION_SUPPORT = 0
 	warning("WARNING:\naltivec2c: numpy not found!\nFloat conversion opcodes unsupported!")
 
-#Constants
-MASK_ALLSET_128 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-MASK_ALLSET_96  = 0xFFFFFFFFFFFFFFFFFFFFFFFF
-MASK_ALLSET_64  = 0xFFFFFFFFFFFFFFFF
-MASK_ALLSET_32  = 0xFFFFFFFF
-MASK_ALLSET_16  = 0xFFFF
-
 def sign_extend_imm5(_8_16, value):
 
 	if value & 0x10 == 0x10:
@@ -44,24 +37,24 @@ def imm5_to_signed_string(value):
 		sign = "-"
 	return sign + "0x{:X}".format(imm)
 
-def vaddcuw(vA, vB, vD):
+def vaddcuw(vD, vA, vB):
 
 	return "[4x32b] if v{:d} + v{:d} > 0xFFFFFFFF: v{:d} = 1, else v{:d} = 0".format(vA, vB, vD, vD)
 
 #flt
-def vaddfp(vA, vB, vD):
+def vaddfp(vD, vA, vB):
 
 	return "[4xfloat] v{:d} = v{:d} + v{:d}".format(vD, vA, vB)
 
-def vaddsbs(vA, vB, vD):
+def vaddsbs(vD, vA, vB):
 
 	return "v{:d}[16x8b][s] = v{:d} + v{:d}. if abs(v{:d}) > 0x7F: v{:d} = 0x7F | sign".format(vD, vA, vB, vD, vD)
 
-def vaddshs(vA, vB, vD):
+def vaddshs(vD, vA, vB):
 
 	return "v{:d}[8x16b][s] = v{:d} + v{:d}. if abs(v{:d}) > 0x7FFF: v{:d} = 0x7FFF | sign".format(vD, vA, vB, vD, vD)
 
-def vaddsws(vA, vB, vD):
+def vaddsws(vD, vA, vB):
 
 	return "v{:d}[4x32b][s] = v{:d} + v{:d}. if abs(v{:d}) > 0x7FFFFFFF: v{:d} = 0x7FFFFFFF | sign".format(vD, vA, vB, vD, vD)
 
@@ -69,147 +62,147 @@ def vaddsws(vA, vB, vD):
 # todo vadduhm
 # todo vadduwm
 
-def vaddubs(vA, vB, vD):
+def vaddubs(vD, vA, vB):
 
 	return "v{:d}[16x8b] = v{:d} + v{:d}. if v{:d} > 0xFF: v{:d} = 0xFF".format(vD, vA, vB, vD, vD)
 
-def vadduhs(vA, vB, vD):
+def vadduhs(vD, vA, vB):
 
 	return "v{:d}[8x16b] = v{:d} + v{:d}. if v{:d} > 0xFFFF: v{:d} = 0xFFFF".format(vD, vA, vB, vD, vD)
 
-def vadduws(vA, vB, vD):
+def vadduws(vD, vA, vB):
 
 	return "v{:d}[4x32b] = v{:d} + v{:d}. if v{:d} > 0xFFFFFFFF: v{:d} = 0xFFFFFFFF".format(vD, vA, vB, vD, vD)
 
-def vand(vA, vB, vD):
+def vand(vD, vA, vB):
 
 	return "v{:d}[128b] = v{:d} & v{:d}".format(vD, vA, vB)
 
-def vandc(vA, vB, vD):
+def vandc(vD, vA, vB):
 
 	return "v{:d}[128b] = v{:d} & ~v{:d}".format(vD, vA, vB)
 
-def vavgsb(vA, vB, vD):
+def vavgsb(vD, vA, vB):
 
 	return "v{:d}[16x8b][s] = (v{:d} + v{:d} + 1) >> 1 (sum before shift is 9 bits value)".format(vD, vA, vB)
 
-def vavgsh(vA, vB, vD):
+def vavgsh(vD, vA, vB):
 
 	return "v{:d}[8x16b][s] = (v{:d} + v{:d} + 1) >> 1 (sum before shift is 17 bits value)".format(vD, vA, vB)
 
-def vavgsw(vA, vB, vD):
+def vavgsw(vD, vA, vB):
 
 	return "v{:d}[4x32b][s] = (v{:d} + v{:d} + 1) >> 1 (sum before shift is 33 bits value)".format(vD, vA, vB)
 
-def vavgub(vA, vB, vD):
+def vavgub(vD, vA, vB):
 
 	return "v{:d}[16x8b] = (v{:d} + v{:d} + 1) >> 1 (sum before shift is 9 bits value)".format(vD, vA, vB)
 
-def vavguh(vA, vB, vD):
+def vavguh(vD, vA, vB):
 
 	return "v{:d}[8x16b] = (v{:d} + v{:d} + 1) >> 1 (sum before shift is 17 bits value)".format(vD, vA, vB)
 
-def vavguw(vA, vB, vD):
+def vavguw(vD, vA, vB):
 
 	return "v{:d}[4x32b] = (v{:d} + v{:d} + 1) >> 1 (sum before shift is 33 bits value)".format(vD, vA, vB)
 
 #todo verify cvts
-def vcfsx(imm, vB, vD):
+def vcfsx(vD, imm, vB):
 
 	imm    = numpy.exp2(imm)
 	return "v{:d}[4xfloat] = (float)(s32)v{:d}  / {:.1f}".format(vD, vB, imm)
 
-def vcfux(imm, vB, vD):
+def vcfux(vD, imm, vB):
 
 	imm    = numpy.exp2(imm)
 	return "v{:d}[4xfloat] = (float)(u32)v{:d}  / {:.1f}".format(vD, vB, imm)
 
 # flt
 # todo
-def vcmpbfp(vA, vB, vD, vRc):
+def vcmpbfp(vD, vA, vB, vRc):
 
 	#if vRc == 1:
 		#rc affected
 	return ""
 
-def vcmpeqfp(vA, vB, vD, vRc):
+def vcmpeqfp(vD, vA, vB, vRc):
 
 	cmt    = "[4xfloat] if v{:d} == v{:d}: v{:d} = 0xFFFFFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpequb(vA, vB, vD, vRc):
+def vcmpequb(vD, vA, vB, vRc):
 
 	cmt    = "[16x8b] if v{:d} == v{:d}: v{:d} = 0xFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpequh(vA, vB, vD, vRc):
+def vcmpequh(vD, vA, vB, vRc):
 
 	cmt    = "[8x16b] if v{:d} == v{:d}: v{:d} = 0xFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpequw(vA, vB, vD, vRc):
+def vcmpequw(vD, vA, vB, vRc):
 
 	cmt    = "[4x32b] if v{:d} == v{:d}: v{:d} = 0xFFFFFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpgefp(vA, vB, vD, vRc):
+def vcmpgefp(vD, vA, vB, vRc):
 
 	cmt    = "[4xfloat] if v{:d} >= v{:d}: v{:d} = 0xFFFFFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 	
-def vcmpgtfp(vA, vB, vD, vRc):
+def vcmpgtfp(vD, vA, vB, vRc):
 
 	cmt    = "[4xfloat] if v{:d} > v{:d}: v{:d} = 0xFFFFFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 	
-def vcmpgtsb(vA, vB, vD, vRc):
+def vcmpgtsb(vD, vA, vB, vRc):
 
 	cmt    = "[16x8b][s] if v{:d} > v{:d}: v{:d} = 0xFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpgtsh(vA, vB, vD, vRc):
+def vcmpgtsh(vD, vA, vB, vRc):
 
 	cmt    = "[8x16b][s] if v{:d} > v{:d}: v{:d} = 0xFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpgtsw(vA, vB, vD, vRc):
+def vcmpgtsw(vD, vA, vB, vRc):
 
 	cmt    = "[4x32b][s] if v{:d} > v{:d}: v{:d} = 0xFFFFFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpgtub(vA, vB, vD, vRc):
+def vcmpgtub(vD, vA, vB, vRc):
 
 	cmt    = "[16x8b] if v{:d} > v{:d}: v{:d} = 0xFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpgtuh(vA, vB, vD, vRc):
+def vcmpgtuh(vD, vA, vB, vRc):
 
 	cmt    = "[8x16b] if v{:d} > v{:d}: v{:d} = 0xFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
 		cmt += " (affects CR6)"
 	return cmt
 
-def vcmpgtuw(vA, vB, vD, vRc):
+def vcmpgtuw(vD, vA, vB, vRc):
 
 	cmt    = "[4x32b] if v{:d} > v{:d}: v{:d} = 0xFFFFFFFF, else v{:d} = 0".format(vA, vB, vD, vD)
 	if vRc == 1:
@@ -217,99 +210,99 @@ def vcmpgtuw(vA, vB, vD, vRc):
 	return cmt
 
 #todo verify cvts
-def vctsxs(imm, vB, vD):
+def vctsxs(vD, imm, vB):
 
 	imm    = numpy.exp2(imm)
 	return "v{:d}[4x32b] = (s32)((float)v{:d}  * {:.1f})".format(vD, vB, imm)
 
-def vctuxs(imm, vB, vD):
+def vctuxs(vD, imm, vB):
 
 	imm    = numpy.exp2(imm)
 	return "v{:d}[4x32b] = (u32)((float)v{:d}  * {:.1f})".format(vD, vB, imm)
 
-def vlogefp(vB, vD):
+def vlogefp(vD, vB):
 
 	return "v{:d}[4xfloat] = log2(v{:d})".format(vD, vB)
 
-def vexptefp(vB, vD):
+def vexptefp(vD, vB):
 
 	return "v{:d}[4xfloat] = exp2(v{:d})".format(vD, vB)
 
-def vmaddfp(vA, vB, vC, vD):
+def vmaddfp(vD, vA, vB, vC):
 
 	return "v{:d}[4xfloat] = (v{:d} * v{:d}) + v{:d}".format(vD, vA, vC, vB)
 
-def vmaxfp(vA, vB, vD):
+def vmaxfp(vD, vA, vB):
 
 	return "[4xfloat] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmaxsb(vA, vB, vD):
+def vmaxsb(vD, vA, vB):
 
 	return "[16x8b][s] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmaxsh(vA, vB, vD):
+def vmaxsh(vD, vA, vB):
 
 	return "[8x16b][s] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmaxsw(vA, vB, vD):
+def vmaxsw(vD, vA, vB):
 
 	return "[4x32b][s] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmaxub(vA, vB, vD):
+def vmaxub(vD, vA, vB):
 
 	return "[16x8b] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmaxuh(vA, vB, vD):
+def vmaxuh(vD, vA, vB):
 
 	return "[8x16b] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmaxuw(vA, vB, vD):
+def vmaxuw(vD, vA, vB):
 
 	return "[4x32b] if v{:d} >= v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vmhaddshs(vA, vB, vC, vD):
+def vmhaddshs(vD, vA, vB, vC):
 
 	return "v{:d}[8x16b][s] = ((s32)(v{:d} * v{:d}) >> 16) + v{:d} if abs(v{:d}) > 0x7FFF: v{:d} = 0x7FFF | sign".format(vD, vA, vC, vB)
 
 #todo check
-def vmhraddshs(vA, vB, vC, vD):
+def vmhraddshs(vD, vA, vB, vC):
 
 	return "v{:d}[8x16b][s] = (((s32)(v{:d} * v{:d}) + 0x4000) >> 16) + v{:d} if abs(v{:d}) > 0x7FFF: v{:d} = 0x7FFF | sign".format(vD, vA, vC, vB)
 
-def vminfp(vA, vB, vD):
+def vminfp(vD, vA, vB):
 
 	return "[4xfloat] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vminsb(vA, vB, vD):
+def vminsb(vD, vA, vB):
 
 	return "[16x8b][s] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vminsh(vA, vB, vD):
+def vminsh(vD, vA, vB):
 
 	return "[8x16b][s] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vminsw(vA, vB, vD):
+def vminsw(vD, vA, vB):
 
 	return "[4x32b][s] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vminub(vA, vB, vD):
+def vminub(vD, vA, vB):
 
 	return "[16x8b] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vminuh(vA, vB, vD):
+def vminuh(vD, vA, vB):
 
 	return "[8x16b] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-def vminuw(vA, vB, vD):
+def vminuw(vD, vA, vB):
 
 	return "[4x32b] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
 # todo fixme
-def vmladduhm(vA, vB, vC, vD):
+def vmladduhm(vD, vA, vB, vC):
 
 	return "v{:d}[8x16b][s] = ((v{:d} * v{:d}) + v{:d}) & 0xFFFF".format(vD, vA, vB, vC)
 
-def vmrghb(vA, vB, vD):
+def vmrghb(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt   += "v{:d}[0].byte  = v{:d}[0].byte\n".format(vD, vA)
@@ -330,7 +323,7 @@ def vmrghb(vA, vB, vD):
 	cmt   += "v{:d}[15].byte = v{:d}[7].byte".format(vD, vB)
 	return cmt
 
-def vmrghh(vA, vB, vD):
+def vmrghh(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt   += "v{:d}[0].half = v{:d}[0].half\n".format(vD, vA)
@@ -343,7 +336,7 @@ def vmrghh(vA, vB, vD):
 	cmt   += "v{:d}[7].half = v{:d}[3].half".format(vD, vB)
 	return cmt
 
-def vmrghw(vA, vB, vD):
+def vmrghw(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt   += "v{:d}[0].word = v{:d}[0].word\n".format(vD, vA)
@@ -352,7 +345,7 @@ def vmrghw(vA, vB, vD):
 	cmt   += "v{:d}[3].word = v{:d}[1].word".format(vD, vB)
 	return cmt
 
-def vmrglb(vA, vB, vD):
+def vmrglb(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt   += "v{:d}[0].byte  = v{:d}[8].byte\n".format(vD, vA)
@@ -373,7 +366,7 @@ def vmrglb(vA, vB, vD):
 	cmt   += "v{:d}[15].byte = v{:d}[15].byte".format(vD, vB)
 	return cmt
 
-def vmrglh(vA, vB, vD):
+def vmrglh(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt   += "v{:d}[0].half = v{:d}[4].half\n".format(vD, vA)
@@ -386,7 +379,7 @@ def vmrglh(vA, vB, vD):
 	cmt   += "v{:d}[7].half = v{:d}[7].half".format(vD, vB)
 	return cmt
 
-def vmrglw(vA, vB, vD):
+def vmrglw(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt   += "v{:d}[0].word  = v{:d}[2].word\n".format(vD, vA)
@@ -397,12 +390,12 @@ def vmrglw(vA, vB, vD):
 
 # vmsummbm todo...
 
-def vmulfp(vA, vB, vD):
+def vmulfp(vD, vA, vB):
 
 	return "[4xfloat] v{:d} = v{:d} * v{:d}".format(vD, vA, vB)
 
 
-def vmulesb(vA, vB, vD):
+def vmulesb(vD, vA, vB):
 
 	cmt    = ".\nsigned\n"
 	cmt  += "v{:d}[0].half = v{:d}[0].byte * v{:d}[0].byte\n".format(vD, vA, vB)
@@ -415,7 +408,7 @@ def vmulesb(vA, vB, vD):
 	cmt  += "v{:d}[7].half = v{:d}[14].byte * v{:d}[14].byte".format(vD, vA, vB)
 	return cmt
 
-def vmulesh(vA, vB, vD):
+def vmulesh(vD, vA, vB):
 
 	cmt    = ".\nsigned\n"
 	cmt  += "v{:d}[0].word = v{:d}[0].half * v{:d}[0].half\n".format(vD, vA, vB)
@@ -424,7 +417,7 @@ def vmulesh(vA, vB, vD):
 	cmt  += "v{:d}[3].word = v{:d}[6].half * v{:d}[6].half".format(vD, vA, vB)
 	return cmt
 
-def vmuleub(vA, vB, vD):
+def vmuleub(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt  += "v{:d}[0].half = v{:d}[0].byte * v{:d}[0].byte\n".format(vD, vA, vB)
@@ -437,7 +430,7 @@ def vmuleub(vA, vB, vD):
 	cmt  += "v{:d}[7].half = v{:d}[14].byte * v{:d}[14].byte".format(vD, vA, vB)
 	return cmt
 
-def vmuleuh(vA, vB, vD):
+def vmuleuh(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt  += "v{:d}[0].word = v{:d}[0].half * v{:d}[0].half\n".format(vD, vA, vB)
@@ -446,7 +439,7 @@ def vmuleuh(vA, vB, vD):
 	cmt  += "v{:d}[3].word = v{:d}[6].half * v{:d}[6].half".format(vD, vA, vB)
 	return cmt
 
-def vmulosb(vA, vB, vD):
+def vmulosb(vD, vA, vB):
 
 	cmt    = ".\nsigned\n"
 	cmt  += "v{:d}[0].half = v{:d}[1].byte * v{:d}[1].byte\n".format(vD, vA, vB)
@@ -459,7 +452,7 @@ def vmulosb(vA, vB, vD):
 	cmt  += "v{:d}[7].half = v{:d}[15].byte * v{:d}[15].byte".format(vD, vA, vB)
 	return cmt
 
-def vmulosh(vA, vB, vD):
+def vmulosh(vD, vA, vB):
 
 	cmt    = ".\nsigned\n"
 	cmt  += "v{:d}[0].word = v{:d}[1].half * v{:d}[1].half\n".format(vD, vA, vB)
@@ -468,7 +461,7 @@ def vmulosh(vA, vB, vD):
 	cmt  += "v{:d}[3].word = v{:d}[7].half * v{:d}[7].half".format(vD, vA, vB)
 	return cmt
 
-def vmuloub(vA, vB, vD):
+def vmuloub(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt  += "v{:d}[0].half = v{:d}[1].byte * v{:d}[1].byte\n".format(vD, vA, vB)
@@ -481,7 +474,7 @@ def vmuloub(vA, vB, vD):
 	cmt  += "v{:d}[7].half = v{:d}[15].byte * v{:d}[15].byte".format(vD, vA, vB)
 	return cmt
 
-def vmulouh(vA, vB, vD):
+def vmulouh(vD, vA, vB):
 
 	cmt    = ".\n"
 	cmt  += "v{:d}[0].word = v{:d}[1].half * v{:d}[1].half\n".format(vD, vA, vB)
@@ -490,31 +483,31 @@ def vmulouh(vA, vB, vD):
 	cmt  += "v{:d}[3].word = v{:d}[7].half * v{:d}[7].half".format(vD, vA, vB)
 	return cmt
 
-def vnmsubfp(vA, vB, vC, vD):
+def vnmsubfp(vD, vA, vB, vC):
 
 	return "v{:d}[4xfloat] = (v{:d} * v{:d}) - v{:d}".format(vD, vA, vC, vB)
 
-def vnor(vA, vB, vD):
+def vnor(vD, vA, vB):
 
 	return "v{:d}[4x32b] = ~(v{:d} | v{:d})".format(vD, vA, vB)
 
-def vnot(vA, vD):
+def vnot(vD, vA):
 
 	return "v{:d}[4x32b] = ~v{:d}".format(vD, vA)
 
-def vor(vA, vB, vD):
+def vor(vD, vA, vB):
 
 	return "v{:d}[4x32b] = v{:d} | v{:d}".format(vD, vA, vB)
 
-def vmr(vA, vD):
+def vmr(vD, vA):
 
 	return "v{:d}[4x32b] = v{:d}".format(vD, vA)
 
-def vperm(vA, vB, vC, vD):
+def vperm(vD, vA, vB, vC):
 
 	return ".\nfor (field = 0; field <= 15; field++)\n{{\n  x = v{:d}.byte[field]\n  if      (x & 0x10) == 0x00) {{v{:d}.byte[field] = v{:d}.byte[x & 0x0f];}}\n  else if (x & 0x10) == 0x10) {{v{:d}.byte[field] = v{:d}.byte[x & 0x0f];}}\n}}".format(vC, vD, vA, vD, vB)
 
-def vpkpx(vA, vB, vD):
+def vpkpx(vD, vA, vB):
 
 	cmt   = "temp  = (v{:d}[0-3].word >> 3) & 0x1F\n".format(vA)
 	cmt  += "temp |= (v{:d}[0-3].word >> 6) & 0x3E0\n".format(vA)
@@ -564,7 +557,7 @@ def vrsqrtefp(vD, vB):
 
 	return "v{:d}[4xfloat] = 1.0 / (v{:d} *  v{:d})".format(vD, vB, vB)
 
-def vsel(vA, vB, vC, vD):
+def vsel(vD, vA, vB, vC):
 
 	return "[128b] if bit in v{:d} == 0 take bit from v{:d}, else take bit from v{:d}".format(vC, vA, vB)
 
@@ -674,15 +667,15 @@ def vsrw(vD, vA, vB):
 
 
 #VMX128
-def vmaddfp128(vA, vB, vD):
+def vmaddfp128(vD, vA, vB):
 
 	return "v{:d}[4xfloat] = (v{:d} * v{:d}) + v{:d}".format(vD, vA, vB, vD)
 
-def vmaddcfp128(vA, vB, vD):
+def vmaddcfp128(vD, vA, vB):
 
 	return "v{:d}[4xfloat] = (v{:d} * v{:d}) + v{:d}".format(vD, vA, vD, vB)
 
-def vnmsubfp128(vA, vB, vD):
+def vnmsubfp128(vD, vA, vB):
 
 	return "v{:d}[4xfloat] = (v{:d} * v{:d}) - v{:d}".format(vD, vA, vD, vB)
 
@@ -764,90 +757,90 @@ def altivecAsm2C(addr):
 
 
 
-	if   opcode_name == "vaddcuw":       return vaddcuw(vA, vB, vD)
-	elif opcode_name == "vaddfp":        return vaddfp(vA, vB, vD)
-	elif opcode_name == "vaddsbs":       return vaddsbs(vA, vB, vD)
-	elif opcode_name == "vaddshs":       return vaddshs(vA, vB, vD)
-	elif opcode_name == "vaddsws":       return vaddsws(vA, vB, vD)
-	elif opcode_name == "vaddubs":       return vaddubs(vA, vB, vD)
-	elif opcode_name == "vadduhs":       return vadduhs(vA, vB, vD)
-	elif opcode_name == "vadduws":       return vadduws(vA, vB, vD)
-	elif opcode_name == "vand":          return vand(vA, vB, vD)
-	elif opcode_name == "vandc":         return vandc(vA, vB, vD)
-	elif opcode_name == "vavgsb":        return vavgsb(vA, vB, vD)
-	elif opcode_name == "vavgsh":        return vavgsh(vA, vB, vD)
-	elif opcode_name == "vavgsw":        return vavgsw(vA, vB, vD)
-	elif opcode_name == "vavgub":        return vavgub(vA, vB, vD)
-	elif opcode_name == "vavguh":        return vavguh(vA, vB, vD)
-	elif opcode_name == "vavguw":        return vavguw(vA, vB, vD)
-	elif opcode_name == "vcmpbfp":       return vcmpbfp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpeqfp":      return vcmpeqfp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpequb":      return vcmpequb(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpequh":      return vcmpequh(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpequw":      return vcmpequw(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgefp":      return vcmpgefp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtfp":      return vcmpgtfp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtsb":      return vcmpgtsb(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtsh":      return vcmpgtsh(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtsw":      return vcmpgtsw(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtub":      return vcmpgtub(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtuh":      return vcmpgtuh(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtuw":      return vcmpgtuw(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpbfp.":      return vcmpbfp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpeqfp.":     return vcmpeqfp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpequb.":     return vcmpequb(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpequh.":     return vcmpequh(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpequw.":     return vcmpequw(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgefp.":     return vcmpgefp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtfp.":     return vcmpgtfp(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtsb.":     return vcmpgtsb(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtsh.":     return vcmpgtsh(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtsw.":     return vcmpgtsw(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtub.":     return vcmpgtub(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtuh.":     return vcmpgtuh(vA, vB, vD, vRc)
-	elif opcode_name == "vcmpgtuw.":     return vcmpgtuw(vA, vB, vD, vRc)
-	elif opcode_name == "vlogefp":       return vlogefp(vB, vD)
-	elif opcode_name == "vexptefp":      return vexptefp(vB, vD)
-	elif opcode_name == "vmaddfp":       return vmaddfp(vA, vB, vC, vD)
-	elif opcode_name == "vmaxfp":        return vmaxfp(vA, vB, vD)
-	elif opcode_name == "vmaxsb":        return vmaxsb(vA, vB, vD)
-	elif opcode_name == "vmaxsh":        return vmaxsh(vA, vB, vD)
-	elif opcode_name == "vmaxsw":        return vmaxsw(vA, vB, vD)
-	elif opcode_name == "vmaxub":        return vmaxub(vA, vB, vD)
-	elif opcode_name == "vmaxuh":        return vmaxuh(vA, vB, vD)
-	elif opcode_name == "vmaxuw":        return vmaxuw(vA, vB, vD)
-	elif opcode_name == "vmhaddshs":     return vmhaddshs(vA, vB, vC, vD)
-	elif opcode_name == "vmhraddshs":    return vmhraddshs(vA, vB, vC, vD)
-	elif opcode_name == "vminfp":        return vminfp(vA, vB, vD)
-	elif opcode_name == "vminsb":        return vminsb(vA, vB, vD)
-	elif opcode_name == "vminsh":        return vminsh(vA, vB, vD)
-	elif opcode_name == "vminsw":        return vminsw(vA, vB, vD)
-	elif opcode_name == "vminub":        return vminub(vA, vB, vD)
-	elif opcode_name == "vminuh":        return vminuh(vA, vB, vD)
-	elif opcode_name == "vminuw":        return vminuw(vA, vB, vD)
-	elif opcode_name == "vmladduhm":     return vmladduhm(vA, vB, vC, vD)
-	elif opcode_name == "vmrghb":        return vmrghb(vA, vB, vD)
-	elif opcode_name == "vmrghh":        return vmrghh(vA, vB, vD)
-	elif opcode_name == "vmrghw":        return vmrghw(vA, vB, vD)
-	elif opcode_name == "vmrglb":        return vmrglb(vA, vB, vD)
-	elif opcode_name == "vmrglh":        return vmrglh(vA, vB, vD)
-	elif opcode_name == "vmrglw":        return vmrglw(vA, vB, vD)
-	elif opcode_name == "vmulfp":        return vmulfp(vA, vB, vD)
-	elif opcode_name == "vmulesb":       return vmulesb(vA, vB, vD)
-	elif opcode_name == "vmulesh":       return vmulesh(vA, vB, vD)
-	elif opcode_name == "vmuleub":       return vmuleub(vA, vB, vD)
-	elif opcode_name == "vmuleuh":       return vmuleuh(vA, vB, vD)
-	elif opcode_name == "vmulosb":       return vmulosb(vA, vB, vD)
-	elif opcode_name == "vmulosh":       return vmulosh(vA, vB, vD)
-	elif opcode_name == "vmuloub":       return vmuloub(vA, vB, vD)
-	elif opcode_name == "vmulouh":       return vmulouh(vA, vB, vD)
-	elif opcode_name == "vnmsubfp":      return vnmsubfp(vA, vB, vC, vD)
-	elif opcode_name == "vnor":          return vnor(vA, vB, vD)
-	elif opcode_name == "vnot":          return vnot(vA, vD)
-	elif opcode_name == "vor":           return vor(vA, vB, vD)
-	elif opcode_name == "vmr":           return vmr(vA, vD)
-	elif opcode_name == "vperm":         return vperm(vA, vB, vC, vD)	
-	elif opcode_name == "vpkpx":         return vpkpx(vA, vB, vD)
+	if   opcode_name == "vaddcuw":       return vaddcuw(vD, vA, vB)
+	elif opcode_name == "vaddfp":        return vaddfp(vD, vA, vB)
+	elif opcode_name == "vaddsbs":       return vaddsbs(vD, vA, vB)
+	elif opcode_name == "vaddshs":       return vaddshs(vD, vA, vB)
+	elif opcode_name == "vaddsws":       return vaddsws(vD, vA, vB)
+	elif opcode_name == "vaddubs":       return vaddubs(vD, vA, vB)
+	elif opcode_name == "vadduhs":       return vadduhs(vD, vA, vB)
+	elif opcode_name == "vadduws":       return vadduws(vD, vA, vB)
+	elif opcode_name == "vand":          return vand(vD, vA, vB)
+	elif opcode_name == "vandc":         return vandc(vD, vA, vB)
+	elif opcode_name == "vavgsb":        return vavgsb(vD, vA, vB)
+	elif opcode_name == "vavgsh":        return vavgsh(vD, vA, vB)
+	elif opcode_name == "vavgsw":        return vavgsw(vD, vA, vB)
+	elif opcode_name == "vavgub":        return vavgub(vD, vA, vB)
+	elif opcode_name == "vavguh":        return vavguh(vD, vA, vB)
+	elif opcode_name == "vavguw":        return vavguw(vD, vA, vB)
+	elif opcode_name == "vcmpbfp":       return vcmpbfp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpeqfp":      return vcmpeqfp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpequb":      return vcmpequb(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpequh":      return vcmpequh(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpequw":      return vcmpequw(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgefp":      return vcmpgefp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtfp":      return vcmpgtfp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtsb":      return vcmpgtsb(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtsh":      return vcmpgtsh(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtsw":      return vcmpgtsw(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtub":      return vcmpgtub(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtuh":      return vcmpgtuh(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtuw":      return vcmpgtuw(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpbfp.":      return vcmpbfp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpeqfp.":     return vcmpeqfp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpequb.":     return vcmpequb(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpequh.":     return vcmpequh(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpequw.":     return vcmpequw(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgefp.":     return vcmpgefp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtfp.":     return vcmpgtfp(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtsb.":     return vcmpgtsb(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtsh.":     return vcmpgtsh(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtsw.":     return vcmpgtsw(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtub.":     return vcmpgtub(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtuh.":     return vcmpgtuh(vD, vA, vB, vRc)
+	elif opcode_name == "vcmpgtuw.":     return vcmpgtuw(vD, vA, vB, vRc)
+	elif opcode_name == "vlogefp":       return vlogefp(vD, vB)
+	elif opcode_name == "vexptefp":      return vexptefp(vD, vB)
+	elif opcode_name == "vmaddfp":       return vmaddfp(vD, vA, vB, vC)
+	elif opcode_name == "vmaxfp":        return vmaxfp(vD, vA, vB)
+	elif opcode_name == "vmaxsb":        return vmaxsb(vD, vA, vB)
+	elif opcode_name == "vmaxsh":        return vmaxsh(vD, vA, vB)
+	elif opcode_name == "vmaxsw":        return vmaxsw(vD, vA, vB)
+	elif opcode_name == "vmaxub":        return vmaxub(vD, vA, vB)
+	elif opcode_name == "vmaxuh":        return vmaxuh(vD, vA, vB)
+	elif opcode_name == "vmaxuw":        return vmaxuw(vD, vA, vB)
+	elif opcode_name == "vmhaddshs":     return vmhaddshs(vD, vA, vB, vC)
+	elif opcode_name == "vmhraddshs":    return vmhraddshs(vD, vA, vB, vC)
+	elif opcode_name == "vminfp":        return vminfp(vD, vA, vB)
+	elif opcode_name == "vminsb":        return vminsb(vD, vA, vB)
+	elif opcode_name == "vminsh":        return vminsh(vD, vA, vB)
+	elif opcode_name == "vminsw":        return vminsw(vD, vA, vB)
+	elif opcode_name == "vminub":        return vminub(vD, vA, vB)
+	elif opcode_name == "vminuh":        return vminuh(vD, vA, vB)
+	elif opcode_name == "vminuw":        return vminuw(vD, vA, vB)
+	elif opcode_name == "vmladduhm":     return vmladduhm(vD, vA, vB, vC)
+	elif opcode_name == "vmrghb":        return vmrghb(vD, vA, vB)
+	elif opcode_name == "vmrghh":        return vmrghh(vD, vA, vB)
+	elif opcode_name == "vmrghw":        return vmrghw(vD, vA, vB)
+	elif opcode_name == "vmrglb":        return vmrglb(vD, vA, vB)
+	elif opcode_name == "vmrglh":        return vmrglh(vD, vA, vB)
+	elif opcode_name == "vmrglw":        return vmrglw(vD, vA, vB)
+	elif opcode_name == "vmulfp":        return vmulfp(vD, vA, vB)
+	elif opcode_name == "vmulesb":       return vmulesb(vD, vA, vB)
+	elif opcode_name == "vmulesh":       return vmulesh(vD, vA, vB)
+	elif opcode_name == "vmuleub":       return vmuleub(vD, vA, vB)
+	elif opcode_name == "vmuleuh":       return vmuleuh(vD, vA, vB)
+	elif opcode_name == "vmulosb":       return vmulosb(vD, vA, vB)
+	elif opcode_name == "vmulosh":       return vmulosh(vD, vA, vB)
+	elif opcode_name == "vmuloub":       return vmuloub(vD, vA, vB)
+	elif opcode_name == "vmulouh":       return vmulouh(vD, vA, vB)
+	elif opcode_name == "vnmsubfp":      return vnmsubfp(vD, vA, vB, vC)
+	elif opcode_name == "vnor":          return vnor(vD, vA, vB)
+	elif opcode_name == "vnot":          return vnot(vD, vA)
+	elif opcode_name == "vor":           return vor(vD, vA, vB)
+	elif opcode_name == "vmr":           return vmr(vD, vA)
+	elif opcode_name == "vperm":         return vperm(vD, vA, vB, vC)	
+	elif opcode_name == "vpkpx":         return vpkpx(vD, vA, vB)
 	elif opcode_name == "vrefp":         return vrefp(vD, vB)
 	elif opcode_name == "vrfim":         return vrfim(vD, vB)
 	elif opcode_name == "vrfin":         return vrfin(vD, vB)
@@ -857,7 +850,7 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vrlh":          return vrlh(vD, vA, vB)
 	elif opcode_name == "vrlw":          return vrlw(vD, vA, vB)
 	elif opcode_name == "vrsqrtefp":     return vrsqrtefp(vD, vB)
-	elif opcode_name == "vsel":          return vsel(vA, vB, vC, vD)
+	elif opcode_name == "vsel":          return vsel(vD, vA, vB, vC)
 	elif opcode_name == "vsl":           return vsl(vD, vA, vB)
 	elif opcode_name == "vslb":          return vslb(vD, vA, vB)
 	elif opcode_name == "vsldoi":        return vsldoi(vD, vA, vB, sh)
@@ -879,40 +872,40 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vsro":          return vsro(vD, vA, vB)
 	elif opcode_name == "vsrw":          return vsrw(vD, vA, vB)	
 	#VMX128
-	elif opcode_name == "vaddfp128":     return vaddfp(vmxA, vmxB, vmxD)
-	elif opcode_name == "vand128":       return vand(vmxA, vmxB, vmxD)
-	elif opcode_name == "vandc128":      return vandc(vmxA, vmxB, vmxD)
-	elif opcode_name == "vcmpeqfp128":   return vcmpeqfp(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpeqfp128.":  return vcmpeqfp(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpequw128":   return vcmpequw(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpequw128.":  return vcmpequw(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpgefp128":   return vcmpgefp(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpgefp128.":  return vcmpgefp(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpgtfp128":   return vcmpgtfp(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vcmpgtfp128.":  return vcmpgtfp(vmxA, vmxB, vmxD, vmxRc)
-	elif opcode_name == "vlogefp128":    return vlogefp(vmxB, vmxD)
-	elif opcode_name == "vexptefp128":   return vexptefp(vmxB, vmxD)
-	elif opcode_name == "vmaddcfp128":   return vmaddfp128(vmxA, vmxB, vmxD)
-	elif opcode_name == "vmaddfp128":    return vmaddcfp128(vmxA, vmxB, vmxD)
-	elif opcode_name == "vmaxfp128":     return vmaxfp(vmxA, vmxB, vmxD)
-	elif opcode_name == "vminfp128":     return vminfp(vmxA, vmxB, vmxD)
-	elif opcode_name == "vmrghw128":     return vmrghw(vmxA, vmxB, vmxD)
-	elif opcode_name == "vmrglw128":     return vmrglw(vmxA, vmxB, vmxD)
-	elif opcode_name == "vmulfp128":     return vmulfp(vA, vB, vD)
-	elif opcode_name == "vnmsubfp128":   return vnmsubfp128(vmxA, vmxB, vmxD)
-	elif opcode_name == "vnor128":       return vnor(vmxA, vmxB, vmxD)
-	elif opcode_name == "vnot128":       return vnot(vmxA, vmxD)
-	elif opcode_name == "vor128":        return vor(vmxA, vmxB, vmxD)
-	elif opcode_name == "vmr128":        return vmr(vmxA, vmxD)
-	elif opcode_name == "vperm128":      return vperm(vmxA, vmxB, vmxC, vmxD)
-	elif opcode_name == "vpermwi128":    return vpermwi128(vmxPerm, vmxB, vmxD)
+	elif opcode_name == "vaddfp128":     return vaddfp(vmxD, vmxA, vmxB)
+	elif opcode_name == "vand128":       return vand(vmxD, vmxA, vmxB)
+	elif opcode_name == "vandc128":      return vandc(vmxD, vmxA, vmxB)
+	elif opcode_name == "vcmpeqfp128":   return vcmpeqfp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpeqfp128.":  return vcmpeqfp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpequw128":   return vcmpequw(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpequw128.":  return vcmpequw(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpgefp128":   return vcmpgefp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpgefp128.":  return vcmpgefp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpgtfp128":   return vcmpgtfp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vcmpgtfp128.":  return vcmpgtfp(vmxD, vmxA, vmxB, vmxRc)
+	elif opcode_name == "vlogefp128":    return vlogefp(vmxD, vmxB)
+	elif opcode_name == "vexptefp128":   return vexptefp(vmxD, vmxB)
+	elif opcode_name == "vmaddcfp128":   return vmaddfp128(vmxD, vmxA, vmxB)
+	elif opcode_name == "vmaddfp128":    return vmaddcfp128(vmxD, vmxA, vmxB)
+	elif opcode_name == "vmaxfp128":     return vmaxfp(vmxD, vmxA, vmxB)
+	elif opcode_name == "vminfp128":     return vminfp(vmxD, vmxA, vmxB)
+	elif opcode_name == "vmrghw128":     return vmrghw(vmxD, vmxA, vmxB)
+	elif opcode_name == "vmrglw128":     return vmrglw(vmxD, vmxA, vmxB)
+	elif opcode_name == "vmulfp128":     return vmulfp(vmxD, vmxA, vmxB)
+	elif opcode_name == "vnmsubfp128":   return vnmsubfp128(vmxD, vmxA, vmxB)
+	elif opcode_name == "vnor128":       return vnor(vmxD, vmxA, vmxB)
+	elif opcode_name == "vnot128":       return vnot(vmxD, vmxA)
+	elif opcode_name == "vor128":        return vor(vmxD, vmxA, vmxB)
+	elif opcode_name == "vmr128":        return vmr(vmxD, vmxA)
+	elif opcode_name == "vperm128":      return vperm(vmxD, vmxA, vmxB, vmxC)
+	elif opcode_name == "vpermwi128":    return vpermwi128(vmxD, vmxPerm, vmxB)
 	elif opcode_name == "vrefp128":      return vrefp(vmxD, vmxB)
 	elif opcode_name == "vrfim128":      return vrfim(vmxD, vmxB)
 	elif opcode_name == "vrfin128":      return vrfin(vmxD, vmxB)
 	elif opcode_name == "vrfip128":      return vrfip(vmxD, vmxB)
 	elif opcode_name == "vrfiz128":      return vrfiz(vmxD, vmxB)
 	elif opcode_name == "vrlw128":       return vrlw(vmxD, vmxA, vmxB)
-	elif opcode_name == "vrlimi128":     return vrlimi128(vmxD, vmxB, vmxImm ,vmxRot)
+	elif opcode_name == "vrlimi128":     return vrlimi128(vmxD, vmxImm, vmxB ,vmxRot)
 	elif opcode_name == "vrsqrtefp128":  return vrsqrtefp(vmxD, vmxB)
 	elif opcode_name == "vsldoi128":     return vsldoi(vmxD, vmxA, vmxB, vmxShb)
 	elif opcode_name == "vslw128":       return vslw(vmxD, vmxA, vmxB)
@@ -920,12 +913,13 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vspltw128":     return vspltw(vmxD, vmxImm, vmxB)
 
 	# Use numpy
-	elif opcode_name == "vcfsx" and FLT_CONVERSION_SUPPORT:      return vcfsx(imm, vB, vD)
-	elif opcode_name == "vcfux" and FLT_CONVERSION_SUPPORT:      return vcfux(imm, vB, vD)
-	elif opcode_name == "vctsxs" and FLT_CONVERSION_SUPPORT:     return vctsxs(imm, vB, vD)
-	elif opcode_name == "vctuxs" and FLT_CONVERSION_SUPPORT:     return vctuxs(imm, vB, vD)
-	elif opcode_name == "vcsxwfp128" and FLT_CONVERSION_SUPPORT: return vcfsx(vmxSimm, vmxB, vmxD) # correct?
-	elif opcode_name == "vcuxwfp128" and FLT_CONVERSION_SUPPORT: return vcfux(vmxImm, vmxB, vmxD) # correct?
+	elif opcode_name == "vcfsx" and FLT_CONVERSION_SUPPORT:      return vcfsx(vD, imm, vB)
+	elif opcode_name == "vcfux" and FLT_CONVERSION_SUPPORT:      return vcfux(vD, imm, vB)
+	elif opcode_name == "vctsxs" and FLT_CONVERSION_SUPPORT:     return vctsxs(vD, imm, vB)
+	elif opcode_name == "vctuxs" and FLT_CONVERSION_SUPPORT:     return vctuxs(vD, imm, vB)
+	#VMX128
+	elif opcode_name == "vcsxwfp128" and FLT_CONVERSION_SUPPORT: return vcfsx(vmxD, vmxImm, vmxB) # correct?
+	elif opcode_name == "vcuxwfp128" and FLT_CONVERSION_SUPPORT: return vcfux(vmxD, vmxImm, vmxB) # correct?
 
 	return 0
 
