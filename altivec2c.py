@@ -42,7 +42,6 @@ def vaddcuw(vD, vA, vB):
 
 	return "[4x32b] if v{:d} + v{:d} > 0xFFFFFFFF: v{:d} = 1, else v{:d} = 0".format(vA, vB, vD, vD)
 
-#flt
 def vaddfp(vD, vA, vB):
 
 	return "[4xfloat] v{:d} = v{:d} + v{:d}".format(vD, vA, vB)
@@ -59,9 +58,17 @@ def vaddsws(vD, vA, vB):
 
 	return "v{:d}[4x32b][s] = v{:d} + v{:d}. if abs(v{:d}) > 0x7FFFFFFF: v{:d} = 0x7FFFFFFF | sign".format(vD, vA, vB, vD, vD)
 
-# todo vaddubm
-# todo vadduhm
-# todo vadduwm
+def vaddubm(vD, vA, vB):
+
+	return "v{:d}[16x8b][u] = v{:d} + v{:d}".format(vD, vA, vB)
+
+def vadduhm(vD, vA, vB):
+
+	return "v{:d}[8x16b][u] = v{:d} + v{:d}".format(vD, vA, vB)
+
+def vadduwm(vD, vA, vB):
+
+	return "v{:d}[4x32b][u] = v{:d} + v{:d}".format(vD, vA, vB)
 
 def vaddubs(vD, vA, vB):
 
@@ -118,13 +125,14 @@ def vcfux(vD, imm, vB):
 	imm    = exp2(imm)
 	return "v{:d}[4xfloat] = (float)(u32)v{:d} / ".format(vD, vB) + imm
 
-# flt
-# todo
 def vcmpbfp(vD, vA, vB, vRc):
 
-	#if vRc == 1:
-		#rc affected
-	return ""
+	cmt    = ".\n[4xfloat] v{:d} = 0\n".format(vD)
+	cmt   += "if v{:d} >  v{:d}: v{:d} |= 0x80000000\n".format(vA, vB, vD)
+	cmt   += "if v{:d} < -v{:d}: v{:d} |= 0x40000000\n".format(vA, vB, vD)
+	if vRc == 1:
+		cmt += "affects CR6.eq"
+	return cmt
 
 def vcmpeqfp(vD, vA, vB, vRc):
 
@@ -298,10 +306,9 @@ def vminuw(vD, vA, vB):
 
 	return "[4x32b] if v{:d} < v{:d}: v{:d} = v{:d}, else v{:d} = v{:d}".format(vA, vB, vD, vA, vD, vB)
 
-# todo fixme
 def vmladduhm(vD, vA, vB, vC):
 
-	return "v{:d}[8x16b][s] = ((v{:d} * v{:d}) + v{:d}) & 0xFFFF".format(vD, vA, vB, vC)
+	return "v{:d}[8x16b][u] = ((v{:d} * v{:d}) + v{:d}) & 0xFFFF".format(vD, vA, vB, vC)
 
 def vmrghb(vD, vA, vB):
 
@@ -664,7 +671,11 @@ def vsrw(vD, vA, vB):
 
 	return "v{:d}[4x32b] = v{:d} >> (v{:d} & 0x1F)".format(vD, vA, vB)
 
+# todo vsubcuw
 
+def vsubfp(vD, vA, vB):
+
+	return "v{:d}[4xfloat] = v{:d} - v{:d}".format(vD, vA, vB)
 
 
 #VMX128
@@ -728,6 +739,7 @@ def vrlimi128(vD, vB, Imm ,Rot):
 	return result
 
 
+
 def altivecAsm2C(addr):
 
 	opcode = get_wide_dword(addr)
@@ -756,13 +768,25 @@ def altivecAsm2C(addr):
 	vmxRot  = (opcode >> 6)  & 0x3
 	vmxShb  = (opcode >> 6)  & 0xF
 
-
+	#VSX / VSX-2
+	#vsxA    = (opcode >> 16) & 0x1F | (opcode << 3) & 0x20
+	#vsxB    = (opcode >> 11) & 0x1F | (opcode << 4) & 0x20
+	#vsxC    = (opcode >> 6)  & 0x1F | (opcode << 2) & 0x20
+	#vsxD    = (opcode >> 21) & 0x1F | (opcode << 5) & 0x20
+	#vsxImm  = (opcode >> 16) & 0x3
+	#vsxBf   = (opcode >> 23) & 0x7
+	#vsxRc   = (opcode >> 10) & 0x1
+	#vsxDm  =  (opcode >> 7)  & 0x3
+	#vsxShw  = (opcode >> 7)  & 0x3
 
 	if   opcode_name == "vaddcuw":       return vaddcuw(vD, vA, vB)
 	elif opcode_name == "vaddfp":        return vaddfp(vD, vA, vB)
 	elif opcode_name == "vaddsbs":       return vaddsbs(vD, vA, vB)
 	elif opcode_name == "vaddshs":       return vaddshs(vD, vA, vB)
 	elif opcode_name == "vaddsws":       return vaddsws(vD, vA, vB)
+	elif opcode_name == "vaddubm":       return vaddubm(vD, vA, vB)
+	elif opcode_name == "vadduhm":       return vadduhm(vD, vA, vB)
+	elif opcode_name == "vadduwm":       return vadduwm(vD, vA, vB)
 	elif opcode_name == "vaddubs":       return vaddubs(vD, vA, vB)
 	elif opcode_name == "vadduhs":       return vadduhs(vD, vA, vB)
 	elif opcode_name == "vadduws":       return vadduws(vD, vA, vB)
@@ -876,6 +900,7 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vsrh":          return vsrh(vD, vA, vB)
 	elif opcode_name == "vsro":          return vsro(vD, vA, vB)
 	elif opcode_name == "vsrw":          return vsrw(vD, vA, vB)	
+	elif opcode_name == "vsubfp":        return vsubfp(vD, vA, vB)	
 	#VMX128
 	elif opcode_name == "vaddfp128":     return vaddfp(vmxD, vmxA, vmxB)
 	elif opcode_name == "vand128":       return vand(vmxD, vmxA, vmxB)
@@ -918,6 +943,10 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vslw128":       return vslw(vmxD, vmxA, vmxB)
 	elif opcode_name == "vspltisw128":   return vspltisw(vmxD, vmxSimm)
 	elif opcode_name == "vspltw128":     return vspltw(vmxD, vmxImm, vmxB)
+	elif opcode_name == "vsubfp128":     return vsubfp(vmxD, vmxA, vmxB)	
+
+	#VSX / VSX-2
+	#elif opcode_name == "xsabsdp":       return xsabsdp(vsxD, vsxB)
 
 	return 0
 
@@ -1056,3 +1085,179 @@ class altivec_helper_t(idaapi.plugin_t):
 
 def PLUGIN_ENTRY():
 	return altivec_helper_t()
+	
+#VSX / VSX-2
+#def xsabsdp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = abs(vs{:d}[0].double)".format(vsxD, vsxB)
+#
+#def xsadddp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = vs{:d}[0].double + vs{:d}[0].double".format(vsxD, vsxA, vsxB)
+#
+#def xsaddsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].float = vs{:d}[0].float + vs{:d}[0].float".format(vsxD, vsxA, vsxB)
+#
+#def xscmpudp(vsxBf, vsxA, vsxB):
+#
+#	return "cr{:d} = compare_unordered(vs{:d}[0].double, vs{:d}[0].double)".format(vsxBf, vsxA, vsxB)
+#
+#def xscpsgndp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = (vs{:d}[0].double & 0x80000000:00000000) | (vs{:d}[0].double & 0x7FFFFFFF:FFFFFFFF)".format(vsxD, vsxA, vsxB)
+#
+#def xscvdpsp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].float = dptofp(vs{:d}[0].double)".format(vsxD, vsxB)
+#
+## fixme
+#def xscvdpspn(vsxD, vsxB):
+#
+#	return "vs{:d}[0].float = dptofp(vs{:d}[0].double)".format(vsxD, vsxB)
+#
+#def xscvdpsxds(vsxD, vsxB):
+#
+#	return ""
+#
+##ok
+#def xscvdpsxws(vsxD, vsxB):
+#
+#	return "vs{:d}[1].word = dptosi32(vs{:d}[0].double)".format(vsxD, vsxB)
+#
+#def xscvdpuxds(vsxD, vsxB):
+#
+#	return "vs{:d}[0].doubleword = dptoui64(vs{:d}[0].double)".format(vsxD, vsxB)
+#
+#def xscvdpuxws(vsxD, vsxB):
+#
+#	return "vs{:d}[1].word = dptoui32(vs{:d}[0].double)".format(vsxD, vsxB)
+#
+#def xscvspdp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = dptofp(vs{:d}[0].float)".format(vsxD, vsxB)
+#
+##fixme
+#def xscvspdpn(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = dptofp(vs{:d}[0].float)".format(vsxD, vsxB)
+#
+#def xscvsxddp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = i64todp(vs{:d}[0].doubleword)".format(vsxD, vsxB)
+#
+#def xscvsxdsp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(i64tofp(vs{:d}[0].doubleword))".format(vsxD, vsxB)
+#
+#def xscvuxddp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = u64todp(vs{:d}[0].doubleword)".format(vsxD, vsxB)
+#
+#def xscvuxdsp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(u64tofp(vs{:d}[0].doubleword))".format(vsxD, vsxB)
+#
+## todo Manual state this is fp divide, like wtf for half of those ops...
+## xsdivsp need work too
+#def xsdivdp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = vs{:d}[0].double / vs{:d}[0].double".format(vsxD, vsxA, vsxB)
+#
+#def xsdivsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(dptofp(vs{:d}[0].double / vs{:d}[0].double))".format(vsxD, vsxA, vsxB)
+#
+#def xsmaddadp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = (vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsmaddmdp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = (vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsmaddasp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double))".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsmaddmsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double))".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsmaxdp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = std::max(vs{:d}[0].double, vs{:d}[0].double)".format(vsxD, vsxA, vsxB)
+#
+#def xsmindp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = std::min(vs{:d}[0].double, vs{:d}[0].double)".format(vsxD, vsxA, vsxB)
+#
+#def xsmsubadp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = (vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsmsubmdp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = (vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsmsubasp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double))".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsmsubmsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double))".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsmuldp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = vs{:d}[0].double * vs{:d}[0].double".format(vsxD, vsxA, vsxB)
+#
+#def xsmulsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = fptodp(dptofp(vs{:d}[0].double * vs{:d}[0].double))".format(vsxD, vsxA, vsxB)
+#
+#def xsnabsdp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = vs{:d}[0].double | 0x80000000:00000000".format(vsxD, vsxB)
+#
+#def xsnegdp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = vs{:d}[0].double | ~(vs{:d}[0].double & 0x80000000:00000000 )".format(vsxD, vsxB)
+#
+#def xsnmaddadp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~((vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double)".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsnmaddmdp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~((vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double)".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsnmaddasp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~(fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double)))".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsnmaddmsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~(fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) + vs{:d}[0].double)))".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsnmsubadp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~((vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double)".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsnmsubmdp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~((vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double)".format(vsxD, vsxA, vsxD, vsxB)
+#
+#def xsnmsubasp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~(fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double)))".format(vsxD, vsxA, vsxB, vsxD)
+#
+#def xsnmsubmsp(vsxD, vsxA, vsxB):
+#
+#	return "vs{:d}[0].double = ~(fptodp(dptofp((vs{:d}[0].double * vs{:d}[0].double) - vs{:d}[0].double)))".format(vsxD, vsxA, vsxD, vsxB)
+#
+##todo xsrdpi, xsrdpic, xsrdpim, xsrdpip, xsrdpiz
+#
+#def xsredp(vsxD, vsxB):
+#
+#	return "vs{:d}[0].double = 1 / vs{:d}[0].double".format(vsxD, vsxB)
