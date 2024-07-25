@@ -44,7 +44,7 @@ def vaddcuw(vD, vA, vB):
 
 def vaddfp(vD, vA, vB):
 
-	return "[4xfloat] v{:d} = v{:d} + v{:d}".format(vD, vA, vB)
+	return "v{:d}[4xfloat] = v{:d} + v{:d}".format(vD, vA, vB)
 
 def vaddsbs(vD, vA, vB):
 
@@ -400,7 +400,7 @@ def vmrglw(vD, vA, vB):
 
 def vmulfp(vD, vA, vB):
 
-	return "[4xfloat] v{:d} = v{:d} * v{:d}".format(vD, vA, vB)
+	return "v{:d}[4xfloat] = v{:d} * v{:d}".format(vD, vA, vB)
 
 
 def vmulesb(vD, vA, vB):
@@ -691,7 +691,7 @@ def vnmsubfp128(vD, vA, vB):
 
 	return "v{:d}[4xfloat] = (v{:d} * v{:d}) - v{:d}".format(vD, vA, vD, vB)
 
-def vpermwi128(vPerm, vB, vD):
+def vpermwi128(vD, vB, vPerm):
 
 	z  = 0xAAAAAAAABBBBBBBBCCCCCCCCDDDDDDDD
 	sa = ((vPerm >> 6) & 3) * 32
@@ -930,7 +930,7 @@ def altivecAsm2C(addr):
 	elif opcode_name == "vor128":        return vor(vmxD, vmxA, vmxB)
 	elif opcode_name == "vmr128":        return vmr(vmxD, vmxA)
 	elif opcode_name == "vperm128":      return vperm(vmxD, vmxA, vmxB, vmxC)
-	elif opcode_name == "vpermwi128":    return vpermwi128(vmxD, vmxPerm, vmxB)
+	elif opcode_name == "vpermwi128":    return vpermwi128(vmxD, vmxB, vmxPerm)
 	elif opcode_name == "vrefp128":      return vrefp(vmxD, vmxB)
 	elif opcode_name == "vrfim128":      return vrfim(vmxD, vmxB)
 	elif opcode_name == "vrfin128":      return vrfin(vmxD, vmxB)
