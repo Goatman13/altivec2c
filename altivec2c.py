@@ -980,7 +980,7 @@ def PluginMainF():
 
 	# convert current function
 	p_func = get_func(get_screen_ea())
-	if(p_func != None):
+	if(type(p_func) != type(None)):
 		start_addr = p_func.start_ea
 		end_addr = p_func.end_ea
 		always_insert_comment = False
