@@ -390,10 +390,10 @@ def vmrglh(vD, vA, vB):
 def vmrglw(vD, vA, vB):
 
 	cmt    = ".\n"
-	cmt   += "v{:d}[0].word  = v{:d}[2].word\n".format(vD, vA)
-	cmt   += "v{:d}[1].word  = v{:d}[2].word\n".format(vD, vB)
-	cmt   += "v{:d}[2].word  = v{:d}[3].word\n".format(vD, vA)
-	cmt   += "v{:d}[3].word  = v{:d}[3].word".format(vD, vB)
+	cmt   += "v{:d}[0].word = v{:d}[2].word\n".format(vD, vA)
+	cmt   += "v{:d}[1].word = v{:d}[2].word\n".format(vD, vB)
+	cmt   += "v{:d}[2].word = v{:d}[3].word\n".format(vD, vA)
+	cmt   += "v{:d}[3].word = v{:d}[3].word".format(vD, vB)
 	return cmt
 
 # vmsummbm todo...
@@ -563,7 +563,7 @@ def vrlw(vD, vA, vB):
 
 def vrsqrtefp(vD, vB):
 
-	return "v{:d}[4xfloat] = 1.0 / (v{:d} *  v{:d})".format(vD, vB, vB)
+	return "v{:d}[4xfloat] = 1.0 / (v{:d} * v{:d})".format(vD, vB, vB)
 
 def vsel(vD, vA, vB, vC):
 
@@ -721,21 +721,21 @@ def vrlimi128(vD, vB, Imm ,Rot):
 	# result
 	result = ".\n"
 	if a == 1:
-		result += "v{:d}[0].word =  v{:d}[{:d}].word\n".format(vD,vB,za)
+		result += "v{:d}[0].word = v{:d}[{:d}].word\n".format(vD,vB,za)
 	else:
-		result += "v{:d}[0].word =  v{:d}[0].word\n".format(vD,vD)
+		result += "v{:d}[0].word = v{:d}[0].word\n".format(vD,vD)
 	if b == 1:
-		result += "v{:d}[1].word =  v{:d}[{:d}].word\n".format(vD,vB,zb)
+		result += "v{:d}[1].word = v{:d}[{:d}].word\n".format(vD,vB,zb)
 	else:
-		result += "v{:d}[1].word =  v{:d}[1].word\n".format(vD,vD)
+		result += "v{:d}[1].word = v{:d}[1].word\n".format(vD,vD)
 	if c == 1:
-		result += "v{:d}[2].word =  v{:d}[{:d}].word\n".format(vD,vB,zc)
+		result += "v{:d}[2].word = v{:d}[{:d}].word\n".format(vD,vB,zc)
 	else:
-		result += "v{:d}[2].word =  v{:d}[2].word\n".format(vD,vD)
+		result += "v{:d}[2].word = v{:d}[2].word\n".format(vD,vD)
 	if d == 1:
-		result += "v{:d}[3].word =  v{:d}[{:d}].word".format(vD,vB,zd)
+		result += "v{:d}[3].word = v{:d}[{:d}].word".format(vD,vB,zd)
 	else:
-		result += "v{:d}[3].word =  v{:d}[3].word".format(vD,vD)
+		result += "v{:d}[3].word = v{:d}[3].word".format(vD,vD)
 	return result
 
 
@@ -969,8 +969,8 @@ def PluginMain():
 	start_addr = read_selection_start()
 	end_addr = read_selection_end()
 	if(start_addr == BADADDR):
-		start_addr = get_screen_ea();
-		end_addr = start_addr + 4;
+		start_addr = get_screen_ea()
+		end_addr = start_addr + 4
 		always_insert_comment = True
 
 	run_task(start_addr, end_addr, always_insert_comment)
@@ -979,15 +979,14 @@ def PluginMain():
 def PluginMainF():
 
 	# convert current function
-	p_func = get_func(get_screen_ea());
-	if(p_func == None):
-		msg("Not in a function, so can't do altivec to C conversion for the current function!\n");
-		return;
-	start_addr = p_func.start_ea;
-	end_addr = p_func.end_ea;
-	always_insert_comment = False;
-
-	run_task(start_addr, end_addr, always_insert_comment)
+	p_func = get_func(get_screen_ea())
+	if(p_func != None):
+		start_addr = p_func.start_ea
+		end_addr = p_func.end_ea
+		always_insert_comment = False
+		run_task(start_addr, end_addr, always_insert_comment)
+	else:
+		msg("Not in a function, so can't do altivec to C conversion for the current function!\n")
 
 
 #/***************************************************************************************************
@@ -1008,59 +1007,59 @@ G_PLUGIN_NAME = "Altivec To C: Selected Lines"
 
 class ActionHandler(idaapi.action_handler_t):
 
-    def __init__(self, callback):
+	def __init__(self, callback):
 
-        idaapi.action_handler_t.__init__(self)
-        self.callback = callback
+		idaapi.action_handler_t.__init__(self)
+		self.callback = callback
 
-    def activate(self, ctx):
+	def activate(self, ctx):
 
-        self.callback()
-        return 1
+		self.callback()
+		return 1
 
-    def update(self, ctx):
+	def update(self, ctx):
 
-        return idaapi.AST_ENABLE_ALWAYS
+		return idaapi.AST_ENABLE_ALWAYS
 
 def register_actions():
 
-    actions = [
-        {
-            'id': 'start:a2c',
-            'name': G_PLUGIN_NAME,
-            'hotkey': 'F3',
-            'comment': G_PLUGIN_COMMENT,
-            'callback': PluginMain,
-            'menu_location': 'Start a2c'
-        },
-        {
-            'id': 'start:a2c1',
-            'name': 'altivec2c unimplemented',
-            'hotkey': 'Alt-Shift-F3',
-            'comment': G_PLUGIN_COMMENT,
-            'callback': PluginMainF,
-            'menu_location': 'Start a2c1'
-        }
-    ]
+	actions = [
+		{
+			'id': 'start:a2c',
+			'name': G_PLUGIN_NAME,
+			'hotkey': 'F3',
+			'comment': G_PLUGIN_COMMENT,
+			'callback': PluginMain,
+			'menu_location': 'Start a2c'
+		},
+		{
+			'id': 'start:a2c1',
+			'name': 'altivec2c unimplemented',
+			'hotkey': 'Alt-Shift-F3',
+			'comment': G_PLUGIN_COMMENT,
+			'callback': PluginMainF,
+			'menu_location': 'Start a2c1'
+		}
+	]
 
-    for action in actions:
+	for action in actions:
 
-        if not idaapi.register_action(idaapi.action_desc_t(
-            action['id'], # Must be the unique item
-            action['name'], # The name the user sees
-            ActionHandler(action['callback']), # The function to call
-            action['hotkey'], # A shortcut, if any (optional)
-            action['comment'] # A comment, if any (optional)
-        )):
+		if not idaapi.register_action(idaapi.action_desc_t(
+			action['id'], # Must be the unique item
+			action['name'], # The name the user sees
+			ActionHandler(action['callback']), # The function to call
+			action['hotkey'], # A shortcut, if any (optional)
+			action['comment'] # A comment, if any (optional)
+		)):
 
-            print('Failed to register ' + action['id'])
+			print('Failed to register ' + action['id'])
 
-        if not idaapi.attach_action_to_menu(
-            action['menu_location'], # The menu location
-            action['id'], # The unique function ID
-            0):
+		if not idaapi.attach_action_to_menu(
+			action['menu_location'], # The menu location
+			action['id'], # The unique function ID
+			0):
 
-            print('Failed to attach to menu '+ action['id'])
+			print('Failed to attach to menu '+ action['id'])
 
 class altivec_helper_t(idaapi.plugin_t):
 	flags = idaapi.PLUGIN_HIDE
