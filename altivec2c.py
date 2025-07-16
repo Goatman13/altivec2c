@@ -704,7 +704,7 @@ def vpermwi128(vD, vB, vPerm):
 	d  = (z >> (96-sd)) & 0xFFFFFFFF
 	return "v{:d}[128b] = v{:d}: {:08X}:{:08X}:{:08X}:{:08X}".format(vD,vB,a,b,c,d)
 
-def vrlimi128(vD, vB, Imm ,Rot):
+def vrlimi128(vD, Imm, vB ,Rot):
 
 	# rotate
 	z  = 0x0123
